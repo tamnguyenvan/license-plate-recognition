@@ -34,6 +34,7 @@ flags.DEFINE_boolean('dont_show', False, 'dont show video output')
 flags.DEFINE_boolean('info', False, 'print info on detections')
 flags.DEFINE_boolean('crop', False, 'crop detections from images')
 flags.DEFINE_boolean('plate', False, 'perform license plate recognition')
+flags.DEFINE_boolean('ocr', False, 'perform ocr')
 
 def main(_argv):
     config = ConfigProto()
@@ -148,6 +149,18 @@ def main(_argv):
                 crop_objects(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), pred_bbox, final_path, allowed_classes)
             else:
                 pass
+
+        if FLAGS.ocr:
+            print(frame.shape)
+            texts = ocr(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB), pred_bbox)
+            num_boxes = pred_bbox[3]
+            bboxes = bboxes[:num_boxes, :]
+            for i in range(len(bboxes)):
+                text = texts[i]
+                coor = bboxes[i]
+                if text is not None:
+                    cv2.putText(frame, text, (int(coor[0]), int(coor[1]-10)), 
+                            cv2.FONT_HERSHEY_SIMPLEX, 1.25, (255,255,0), 2)
 
         if FLAGS.count:
             # count objects found
